@@ -113,9 +113,7 @@ Next we just need to compile and run the program. The compilation is a tradition
         CacheBenchmark.ramCacheSizeEnds    thrpt   30  7851.176 ± 12.332  ops/s
 
 
-The results are pretty interesting. The intuitive interpretation turns to be completely wrong and the apparently worst case scenario turns to be the best one. More it appears that the throughput is independent on the size of the array, and as a consequence independent on the location of the data in the memory. A possible interpretation for this is that the java compiler is clever enough to avoid memory movement since the only data changed in the array is the first and last char. So it is not a fundamental reason to copy data between caches since only two bytes are being updated at each iteration.
-
-On the other hand the random cache size follows better our intuition. This is because we force the java interpreter to move data between cache layers because we pseudo-randomly choose locations for the swap. The results however are not very clear since the test on L3 achieved worst results than main memory tests. This could be justified by the naive pseudo random generator that could not be exploiting the boundaries in the best way.
+The results are pretty interesting. The intuitive interpretation turns to be completely wrong and the apparently worst case scenario turns to be the best one. More, it appears that the throughput is independent on the size of the array, and as a consequence independent on the location of the data in the memory. A possible interpretation for this is that the java compiler is clever enough to avoid memory movement since the only data changed in the array is the first and last char. So it is not a fundamental reason to copy data between caches since only two bytes are being updated at each iteration.
 
 After some tweeking we arrive at this **swap function**
 
@@ -171,7 +169,7 @@ With this last changes we were able to break locality between swaps and therefor
 
 ## Conclusion
 
-This exercise as a very interesting one. The several approaches used to break the locality pattern of data access showed us how complex the memory layout is and how surprising the results could be if we ignore the memory arquitecture.
+This exercise as a very interesting one. The several approaches used to break the locality pattern of data access showed us how complex the memory layout is and how surprising the results could be if we ignore the memory architecture. The lesson here is that we should avoid at all costs random access memory to minimize need to move data between cache layers. The work done here is just an heads up for the need to take into account lower level constrains, such computer architecture. Some people tend to spread the idea that high level languages decouple the programmer from the need to understand under the wood. This is just a simple example to point the other direction. **People that work with higher level languages, like java, should understand lower level concepts to take his programs to a higher level**
 
 
 NOTE:
