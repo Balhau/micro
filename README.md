@@ -65,53 +65,113 @@ We choose a prime number to avoid collisions of positions due rest of division (
       private static int L3_CACHE_SIZE=1024*4096;             //4 Megabytes of data
       private static int RAM_SEGMENT = 1024*1024*10;          //10 Megabytes of data
 
+      private static char[] LETTERS_L1 = populateCharArray((int)Math.ceil(L1_CACHE_SIZE/2));
+      private static char[] LETTERS_L2 = populateCharArray((int)Math.ceil(L2_CACHE_SIZE/2));
+      private static char[] LETTERS_L3 = populateCharArray((int)Math.ceil(L3_CACHE_SIZE/2));
+      private static char[] LETTERS_RAM_SEGMENT = populateCharArray((int)Math.ceil(RAM_SEGMENT/2));
+
 
 And finally we just need to create the four benchmarks previously defined
 
-    @Benchmark
-    public void l1CacheSizeToying() {
-        char[] letters = new char[(int)Math.ceil(L1_CACHE_SIZE/2)];
-        shuffleLetters(letters,MAX_ITERATIONS);
-    }
+          @Benchmark
+          public void l1CacheSizeToying() {
+              shuffleLetters(LETTERS_L1,MAX_ITERATIONS);
+          }
 
-    @Benchmark
-    public void l2CacheSizeToying() {
-        char[] letters = new char[(int)Math.ceil(L2_CACHE_SIZE/2)];
-        shuffleLetters(letters,MAX_ITERATIONS);
-    }
+          @Benchmark
+          public void l2CacheSizeToying() {
+              shuffleLetters(LETTERS_L2,MAX_ITERATIONS);
+          }
 
-    @Benchmark
-    public void l3CacheSizeToying() {
-        char[] letters = new char[(int)Math.ceil(L3_CACHE_SIZE/2)];
-        shuffleLetters(letters,MAX_ITERATIONS);
-    }
+          @Benchmark
+          public void l3CacheSizeToying() {
+              shuffleLetters(LETTERS_L3,MAX_ITERATIONS);
+          }
 
-    @Benchmark
-    public void ramCacheSizeToying() {
-        char[] letters = new char[(int)Math.ceil(RAM_SEGMENT/2)];
-        shuffleLetters(letters,MAX_ITERATIONS);
-    }
-
-Next we just need to compile and run the program. The compilation is a traditional mvn clean install. To run the program we decided to run with a warmup cycle of 3 iterations and a run of 3 iterations also. This process was repeated 10 times for each benchmark. The result follows
+          @Benchmark
+          public void ramCacheSizeToying() {
+              shuffleLetters(LETTERS_RAM_SEGMENT,MAX_ITERATIONS);
+          }
 
 
-      Result "net.balhau.benchmark.CacheBenchmark.ramCacheSizeToying":
-        169.943 ±(99.9%) 2.618 ops/s [Average]
-        (min, avg, max) = (158.254, 169.943, 173.407), stdev = 3.918
-        CI (99.9%): [167.326, 172.561] (assumes normal distribution)
+We also implemented a second swapping method. This second method only swaps the ends of the array. Theoretically this should end up with worst cases than the random algorithm since it will hit the ends of the array. Intuitively this should mean that we would end up swapping two characters belonging to different locations in the memory. Since to read the first char, part of the array should be copied to L1 and then the
+
+Next we just need to compile and run the program. The compilation is a traditional mvn clean install. To run the program we decided to run with a warm-up cycle of 3 iterations and a run of 3 iterations also. This process was repeated 10 times for each benchmark. The result follows
+
+        # Run complete. Total time: 00:09:07
+
+        Benchmark                           Mode  Cnt     Score    Error  Units
+
+        CacheBenchmark.l1CacheSizeRandom   thrpt   30  1343.130 ± 68.243  ops/s
+        CacheBenchmark.l2CacheSizeRandom   thrpt   30  1374.820 ± 35.100  ops/s
+        CacheBenchmark.l3CacheSizeRandom   thrpt   30  1376.034 ± 34.804  ops/s
+        CacheBenchmark.ramCacheSizeRandom  thrpt   30  1377.505 ± 35.628  ops/s
+
+        CacheBenchmark.l1CacheSizeEnds     thrpt   30  7846.218 ± 10.313  ops/s
+        CacheBenchmark.l2CacheSizeEnds     thrpt   30  7854.716 ± 10.566  ops/s
+        CacheBenchmark.l3CacheSizeEnds     thrpt   30  7848.913 ± 10.017  ops/s
+        CacheBenchmark.ramCacheSizeEnds    thrpt   30  7851.176 ± 12.332  ops/s
 
 
-      # Run complete. Total time: 00:04:08
+The results are pretty interesting. The intuitive interpretation turns to be completely wrong and the apparently worst case scenario turns to be the best one. More it appears that the throughput is independent on the size of the array, and as a consequence independent on the location of the data in the memory. A possible interpretation for this is that the java compiler is clever enough to avoid memory movement since the only data changed in the array is the first and last char. So it is not a fundamental reason to copy data between caches since only two bytes are being updated at each iteration.
 
-      Benchmark                           Mode  Cnt      Score     Error  Units
-      CacheBenchmark.l1CacheSizeToying   thrpt   30  59191.859 ± 998.598  ops/s
-      CacheBenchmark.l2CacheSizeToying   thrpt   30   8433.765 ± 328.514  ops/s
-      CacheBenchmark.l3CacheSizeToying   thrpt   30    432.242 ±   3.396  ops/s
-      CacheBenchmark.ramCacheSizeToying  thrpt   30    169.943 ±   2.618  ops/s
+On the other hand the random cache size follows better our intuition. This is because we force the java interpreter to move data between cache layers because we pseudo-randomly choose locations for the swap. The results however are not very clear since the test on L3 achieved worst results than main memory tests. This could be justified by the naive pseudo random generator that could not be exploiting the boundaries in the best way.
+
+After some tweeking we arrive at this **swap function**
 
 
-It was expected that the results would reveal this degrading property in terms of throughput due the different latency values of ram and the respective caches. The nice thing here is that with this simple experiment we were able to validate the intuition with numbers.
+      private void shuffleLettersWithSpace(char[] letters,int iterations,int space){
+        int p1,p2;
+        char aux;
+        int offset1 = space == 0 ? L1_CACHE_SIZE : space;
+        int offset2 = space == 0 ? 0 : space;
+        for(int i=0;i<iterations;i++){
+            p1=(PRIME_NUMBER*i)%offset1;
+            p2=space+(PRIME_NUMBER*(i+1))%(letters.length-offset2);
+            aux=letters[p1];
+            letters[p1]=letters[p2];
+            letters[p2]=aux;
+        }
+      }
 
+and executed the tests with the following parametrization
+
+      @Benchmark
+      public void randomL1CacheSize() {
+          shuffleLettersWithSpace(LETTERS_L1,MAX_ITERATIONS,1);
+      }
+
+      @Benchmark
+      public void randomL2CacheSize() {
+          shuffleLettersWithSpace(LETTERS_L2,MAX_ITERATIONS,L1_CACHE_SIZE);
+      }
+
+      @Benchmark
+      public void randomL3CacheSize() {
+          shuffleLettersWithSpace(LETTERS_L3,MAX_ITERATIONS,L2_CACHE_SIZE);
+      }
+
+      @Benchmark
+      public void randomRamCacheSize() {
+          shuffleLettersWithSpace(LETTERS_RAM_SEGMENT,MAX_ITERATIONS,L3_CACHE_SIZE);
+      }
+
+
+With this last changes we were able to break locality between swaps and therefore the results ended up following our initial intuition
+
+
+      # Run complete. Total time: 00:04:26
+
+      Benchmark                           Mode  Cnt     Score     Error  Units
+      CacheBenchmark.randomL1CacheSize   thrpt   30  2721.370 ± 134.873  ops/s
+      CacheBenchmark.randomL2CacheSize   thrpt   30  1619.906 ±   6.001  ops/s
+      CacheBenchmark.randomL3CacheSize   thrpt   30   662.824 ±   8.922  ops/s
+      CacheBenchmark.randomRamCacheSize  thrpt   30   452.432 ±   1.969  ops/s
+
+
+## Conclusion
+
+This exercise as a very interesting one. The several approaches used to break the locality pattern of data access showed us how complex the memory layout is and how surprising the results could be if we ignore the memory arquitecture.
 
 
 NOTE:
