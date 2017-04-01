@@ -32,9 +32,6 @@
 package net.balhau.benchmark;
 
 import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
 
 public class CacheBenchmark {
     private static int MAX_ITERATIONS = 1000*1000*500;
