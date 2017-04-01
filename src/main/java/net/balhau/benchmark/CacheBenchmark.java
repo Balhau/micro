@@ -33,12 +33,16 @@ package net.balhau.benchmark;
 
 import org.openjdk.jmh.annotations.Benchmark;
 
+/**
+ * Benchmark over L1,L2,L3 and main memory
+ */
 public class CacheBenchmark {
-    private static int MAX_ITERATIONS = 1000*1000*500;
-    private static int PRIME_NUMBER = 7919;
-    private static int L1_CACHE_SIZE=1024*32;
-    private static int L2_CACHE_SIZE=1024*256;
-    private static int L3_CACHE_SIZE=1024*4096;
+    private static int MAX_ITERATIONS = 1000*1000*500;      //Max number of iterations
+    private static int PRIME_NUMBER = 7919;                 //PRIME_NUMBER for shuffling
+    private static int L1_CACHE_SIZE=1024*32;               //32 Kilobytes of data
+    private static int L2_CACHE_SIZE=1024*256;              //256 Kilobytes of data
+    private static int L3_CACHE_SIZE=1024*4096;             //4 Megabytes of data
+    private static int RAM_SEGMENT = 1024*1024*10;          //10 Megabytes of data
 
 
     private void populateCharArray(char[] letters){
@@ -72,6 +76,12 @@ public class CacheBenchmark {
     @Benchmark
     public void l3CacheSizeToying() {
         char[] letters = new char[(int)Math.ceil(L3_CACHE_SIZE/2)];
+        shuffleLetters(letters,MAX_ITERATIONS);
+    }
+
+    @Benchmark
+    public void ramCacheSizeToying() {
+        char[] letters = new char[(int)Math.ceil(RAM_SEGMENT/2)];
         shuffleLetters(letters,MAX_ITERATIONS);
     }
 
