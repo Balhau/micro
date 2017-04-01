@@ -1,7 +1,10 @@
 ## Benchmarking Memory
 
 ## Caches and NUMA
-Today post is all about tinkering with memory. This experiments were inspired by a investigation of a [friend/coworker/geek_soldier](https://www.linkedin.com/in/luismiguelsilva/) regarding memory operations. His investigation is broader and the examples will be, certainly more complex. Here we will tackle the simpler of the memory analysis problem. Crossing boundaries between [L1,L2 and L3 caches](https://en.wikipedia.org/wiki/Cache_memory). Most modern CPU architectures will have some form of [NUMA](https://en.wikipedia.org/wiki/Non-uniform_memory_access) architecture. NUMA is a complex memory layout that tries to exploit the [phenomenon of data locality](https://en.wikipedia.org/wiki/Locality_of_reference). In short L1,L2,L3 are three levels of memory
+Today post is all about tinkering with memory. This experiments were inspired by a investigation of a [friend/coworker/geek_soldier](https://www.linkedin.com/in/luismiguelsilva/) regarding memory operations. His investigation is broader and the examples will be, certainly more complex. Here we will tackle the simpler of the memory analysis problem. Crossing boundaries between [L1,L2 and L3 caches](https://en.wikipedia.org/wiki/Cache_memory). Most modern CPU architectures will have some form of [NUMA](https://en.wikipedia.org/wiki/Non-uniform_memory_access) architecture. NUMA is a complex memory layout that tries to exploit the [phenomenon of data locality](https://en.wikipedia.org/wiki/Locality_of_reference). In short L1,L2,L3 are three levels of memory.
+
+![Example of NUMA in Cortex-A53](http://shared.balhau.net/imgs/Cortex-A53.png)
+
 L1 is the closest to CPU and L3 the farthest, and then, of course we got main memory. To be able to tinker with all these kinds of memories we need first to identify them on our laptop. For that, assuming you are using a linux distribution, you can use [lscpu](http://manpages.courier-mta.org/htmlman1/lscpu.1.html). For instance on my laptop I got following description
 
 	lscpu
@@ -186,5 +189,6 @@ With this last changes we were able to break locality between swaps and therefor
 This exercise as a very interesting one. The several approaches used to break the locality pattern of data access showed us how complex the memory layout is and how surprising the results could be if we ignore the memory architecture. The lesson here is that we should avoid at all costs random access memory to minimize need to move data between cache layers. The work done here is just an heads up for the need to take into account lower level constrains, such computer architecture. Some people tend to spread the idea that high level languages decouple the programmer from the need to understand under the wood. This is just a simple example to point the other direction. **People that work with higher level languages, like java, should understand lower level concepts to take his programs to a higher level**
 
 
-NOTE:
-Thanks again to [Luis Silva](https://www.linkedin.com/in/luismiguelsilva/) to share and inspire this kindergarten experiment
+**NOTE**:
+
+* Thanks again to [Luis Silva](https://www.linkedin.com/in/luismiguelsilva/) to share and inspire this kindergarten experiment
