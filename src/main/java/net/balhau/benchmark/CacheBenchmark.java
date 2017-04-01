@@ -59,6 +59,19 @@ public class CacheBenchmark {
         return letters;
     }
 
+    private void shuffleLetters(char[] letters,int iterations){
+        int p1,p2;
+        char aux;
+        for(int i=0;i<iterations;i++){
+            p1=(PRIME_NUMBER*i)%letters.length;
+            p2=(PRIME_NUMBER*(i+1))%letters.length;
+
+            aux=letters[p1];
+            letters[p1]=letters[p2];
+            letters[p2]=aux;
+        }
+    }
+
 
     private void shuffleLettersWithSpace(char[] letters,int iterations,int space){
         int p1,p2;
@@ -84,6 +97,26 @@ public class CacheBenchmark {
             letters[p1]=letters[p2];
             letters[p2]=aux;
         }
+    }
+
+    @Benchmark
+    public void dummyRandomL1CacheSize() {
+        shuffleLetters(LETTERS_L1,MAX_ITERATIONS);
+    }
+
+    @Benchmark
+    public void dummyRandomL2CacheSize() {
+        shuffleLetters(LETTERS_L2,MAX_ITERATIONS);
+    }
+
+    @Benchmark
+    public void dummyRandomL3CacheSize() {
+        shuffleLetters(LETTERS_L3,MAX_ITERATIONS);
+    }
+
+    @Benchmark
+    public void dummyRandomRamCacheSize() {
+        shuffleLetters(LETTERS_RAM_SEGMENT,MAX_ITERATIONS);
     }
 
     @Benchmark

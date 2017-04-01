@@ -48,12 +48,16 @@ To sum up all these ideas we create a simple *letter swap* algorithm that will p
 Since the letter swapping is *kind of random* in the case that char[] will cross a boundary a latency penalty should be noticed. So for that we devise this naive, but hopefully enough, algorithm.
 
       private void shuffleLetters(char[] letters,int iterations){
-          populateCharArray(letters);
-          int p1,p2;
-          for(int i=0;i<iterations;i++){
-              p1=(PRIME_NUMBER*i)%letters.length;
-              p2=(PRIME_NUMBER*(i+1))%letters.length;
-          }
+        int p1,p2;
+        char aux;
+        for(int i=0;i<iterations;i++){
+            p1=(PRIME_NUMBER*i)%letters.length;
+            p2=(PRIME_NUMBER*(i+1))%letters.length;
+
+            aux=letters[p1];
+            letters[p1]=letters[p2];
+            letters[p2]=aux;
+        }
       }
 
 We choose a prime number to avoid collisions of positions due rest of division (is just a nice property) that comes directly from number theory more specifically prime number theory. Aside from that this is a pretty simple algorithm to shuffle the letters inside the array. Next we need to define the size for the array. For that we take into account the output we got previously and build the following properties
@@ -158,13 +162,23 @@ and executed the tests with the following parametrization
 With this last changes we were able to break locality between swaps and therefore the results ended up following our initial intuition
 
 
-      # Run complete. Total time: 00:04:26
+      # Run complete. Total time: 00:13:19
 
-      Benchmark                           Mode  Cnt     Score     Error  Units
-      CacheBenchmark.randomL1CacheSize   thrpt   30  2721.370 ± 134.873  ops/s
-      CacheBenchmark.randomL2CacheSize   thrpt   30  1619.906 ±   6.001  ops/s
-      CacheBenchmark.randomL3CacheSize   thrpt   30   662.824 ±   8.922  ops/s
-      CacheBenchmark.randomRamCacheSize  thrpt   30   452.432 ±   1.969  ops/s
+      Benchmark                                Mode  Cnt     Score     Error  Units
+      CacheBenchmark.dummyRandomL1CacheSize   thrpt   30  3095.281 ±  13.978  ops/s
+      CacheBenchmark.dummyRandomL2CacheSize   thrpt   30  3015.209 ±  20.361  ops/s
+      CacheBenchmark.dummyRandomL3CacheSize   thrpt   30  1022.160 ±  48.279  ops/s
+      CacheBenchmark.dummyRandomRamCacheSize  thrpt   30  1512.657 ±  19.357  ops/s
+
+      CacheBenchmark.endsL1CacheSize          thrpt   30  7862.380 ±  33.593  ops/s
+      CacheBenchmark.endsL2CacheSize          thrpt   30  7871.230 ±  33.683  ops/s
+      CacheBenchmark.endsL3CacheSize          thrpt   30  7819.517 ±  64.240  ops/s
+      CacheBenchmark.endsRamCacheSize         thrpt   30  7767.898 ±  70.793  ops/s
+
+      CacheBenchmark.randomL1CacheSize        thrpt   30  2722.183 ± 133.377  ops/s
+      CacheBenchmark.randomL2CacheSize        thrpt   30  1558.666 ±  56.423  ops/s
+      CacheBenchmark.randomL3CacheSize        thrpt   30   625.325 ±  35.480  ops/s
+      CacheBenchmark.randomRamCacheSize       thrpt   30   452.165 ±   4.326  ops/s
 
 
 ## Conclusion
