@@ -18,23 +18,23 @@ public class CacheBenchmark {
     private static int RAM_SEGMENT = 1024*1024*10;          //10 Megabytes of data
     private static int BUFFER_PADDING = 1024;
 
-    private static char[] LETTERS_L1 = populateCharArray((int)Math.ceil(L1_CACHE_SIZE)-BUFFER_PADDING);
-    private static char[] LETTERS_L2 = populateCharArray((int)Math.ceil(L2_CACHE_SIZE)-BUFFER_PADDING);
-    private static char[] LETTERS_L3 = populateCharArray((int)Math.ceil(L3_CACHE_SIZE)-BUFFER_PADDING);
-    private static char[] LETTERS_RAM_SEGMENT = populateCharArray((int)Math.ceil(RAM_SEGMENT)-BUFFER_PADDING);
+    private static byte[] LETTERS_L1 = populateByteArray((int)Math.ceil(L1_CACHE_SIZE)-BUFFER_PADDING);
+    private static byte[] LETTERS_L2 = populateByteArray((int)Math.ceil(L2_CACHE_SIZE)-BUFFER_PADDING);
+    private static byte[] LETTERS_L3 = populateByteArray((int)Math.ceil(L3_CACHE_SIZE)-BUFFER_PADDING);
+    private static byte[] LETTERS_RAM_SEGMENT = populateByteArray((int)Math.ceil(RAM_SEGMENT)-BUFFER_PADDING);
 
 
-    private static char[] populateCharArray(int size){
-        char[] letters = new char[size];
+    private static byte[] populateByteArray(int size){
+        byte[] letters = new byte[size];
         for(int i=0;i<letters.length;i++){
-            letters[i]=(char)((i*PRIME_NUMBER)%256);
+            letters[i]=(byte)((i*PRIME_NUMBER)%256);
         }
         return letters;
     }
 
-    private void shuffleLetters(char[] letters,int iterations){
+    private void shuffleLetters(byte[] letters,int iterations){
         int p1,p2;
-        char aux;
+        byte aux;
         for(int i=0;i<iterations;i++){
             p1=(PRIME_NUMBER*i)%letters.length;
             p2=(PRIME_NUMBER*(i+1))%letters.length;
@@ -46,9 +46,9 @@ public class CacheBenchmark {
     }
 
 
-    private void shuffleLettersWithSpace(char[] letters,int iterations,int space){
+    private void shuffleLettersWithSpace(byte[] letters,int iterations,int space){
         int p1,p2;
-        char aux;
+        byte aux;
         int offset1 = space == 0 ? L1_CACHE_SIZE : space;
         int offset2 = space == 0 ? 0 : space;
         for(int i=0;i<iterations;i++){
@@ -60,9 +60,9 @@ public class CacheBenchmark {
         }
     }
 
-    private void swapEnds(char[] letters,int iterations){
+    private void swapEnds(byte[] letters,int iterations){
         int p1,p2;
-        char aux;
+        byte aux;
         for(double i=0;i<iterations;i++){
             p1=0;
             p2=letters.length-1;

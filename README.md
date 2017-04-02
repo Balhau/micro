@@ -41,18 +41,18 @@ To benchmark this low level constructs we need the help of a programming languag
 
 ## Swap my letter
 
-To sum up all these ideas we create a simple *letter swap* algorithm that will pseudo-randomly swap letter in a char[]. The idea is to create several char[] structures of this form
+To sum up all these ideas we create a simple *letter swap* algorithm that will pseudo-randomly swap letter in a byte[]. The idea is to create several byte[] structures of this form
 
-  * char[] living only in L1 cache
-  * char[] crossing boundaries between L1 and L2
-  * char[] crossing boundaries between L1, L2 and L3
-  * char[] crossing boundaries between L1, L2, L3 and main memory
+  * byte[] living only in L1 cache
+  * byte[] crossing boundaries between L1 and L2
+  * byte[] crossing boundaries between L1, L2 and L3
+  * byte[] crossing boundaries between L1, L2, L3 and main memory
 
-Since the letter swapping is *kind of random* in the case that char[] will cross a boundary a latency penalty should be noticed. So for that we devise this naive, but hopefully enough, algorithm.
+Since the letter swapping is *kind of random* in the case that byte[] will cross a boundary a latency penalty should be noticed. So for that we devise this naive, but hopefully enough, algorithm.
 
-      private void shuffleLetters(char[] letters,int iterations){
+      private void shuffleLetters(byte[] letters,int iterations){
         int p1,p2;
-        char aux;
+        byte aux;
         for(int i=0;i<iterations;i++){
             p1=(PRIME_NUMBER*i)%letters.length;
             p2=(PRIME_NUMBER*(i+1))%letters.length;
@@ -72,10 +72,10 @@ We choose a prime number to avoid collisions of positions due rest of division (
       private static int L3_CACHE_SIZE=1024*4096;             //4 Megabytes of data
       private static int RAM_SEGMENT = 1024*1024*10;          //10 Megabytes of data
 
-      private static char[] LETTERS_L1 = populateCharArray((int)Math.ceil(L1_CACHE_SIZE/2));
-      private static char[] LETTERS_L2 = populateCharArray((int)Math.ceil(L2_CACHE_SIZE/2));
-      private static char[] LETTERS_L3 = populateCharArray((int)Math.ceil(L3_CACHE_SIZE/2));
-      private static char[] LETTERS_RAM_SEGMENT = populateCharArray((int)Math.ceil(RAM_SEGMENT/2));
+      private static byte[] LETTERS_L1 = populateByteArray((int)Math.ceil(L1_CACHE_SIZE/2));
+      private static byte[] LETTERS_L2 = populateByteArray((int)Math.ceil(L2_CACHE_SIZE/2));
+      private static byte[] LETTERS_L3 = populateByteArray((int)Math.ceil(L3_CACHE_SIZE/2));
+      private static byte[] LETTERS_RAM_SEGMENT = populateByteArray((int)Math.ceil(RAM_SEGMENT/2));
 
 
 And finally we just need to create the four benchmarks previously defined
@@ -125,9 +125,9 @@ The results are pretty interesting. The intuitive interpretation turns to be com
 After some tweeking we arrive at this **swap function**
 
 
-      private void shuffleLettersWithSpace(char[] letters,int iterations,int space){
+      private void shuffleLettersWithSpace(byte[] letters,int iterations,int space){
         int p1,p2;
-        char aux;
+        byte aux;
         int offset1 = space == 0 ? L1_CACHE_SIZE : space;
         int offset2 = space == 0 ? 0 : space;
         for(int i=0;i<iterations;i++){
@@ -165,23 +165,23 @@ and executed the tests with the following parametrization
 With this last changes we were able to break locality between swaps and therefore the results ended up following our initial intuition
 
 
-      # Run complete. Total time: 00:13:19
+			# Run complete. Total time: 00:13:18
 
-      Benchmark                                Mode  Cnt     Score     Error  Units
-      CacheBenchmark.dummyRandomL1CacheSize   thrpt   30  3095.281 ±  13.978  ops/s
-      CacheBenchmark.dummyRandomL2CacheSize   thrpt   30  3015.209 ±  20.361  ops/s
-      CacheBenchmark.dummyRandomL3CacheSize   thrpt   30  1022.160 ±  48.279  ops/s
-      CacheBenchmark.dummyRandomRamCacheSize  thrpt   30  1512.657 ±  19.357  ops/s
+			Benchmark                                Mode  Cnt     Score     Error  Units
+			CacheBenchmark.dummyRandomL1CacheSize   thrpt   30  2969.995 ±  76.271  ops/s
+			CacheBenchmark.dummyRandomL2CacheSize   thrpt   30  2842.415 ±  94.449  ops/s
+			CacheBenchmark.dummyRandomL3CacheSize   thrpt   30  1840.950 ± 148.141  ops/s
+			CacheBenchmark.dummyRandomRamCacheSize  thrpt   30  2651.015 ±  78.600  ops/s
 
-      CacheBenchmark.endsL1CacheSize          thrpt   30  7862.380 ±  33.593  ops/s
-      CacheBenchmark.endsL2CacheSize          thrpt   30  7871.230 ±  33.683  ops/s
-      CacheBenchmark.endsL3CacheSize          thrpt   30  7819.517 ±  64.240  ops/s
-      CacheBenchmark.endsRamCacheSize         thrpt   30  7767.898 ±  70.793  ops/s
+			CacheBenchmark.endsL1CacheSize          thrpt   30  7886.504 ±  10.746  ops/s
+			CacheBenchmark.endsL2CacheSize          thrpt   30  7888.736 ±   9.530  ops/s
+			CacheBenchmark.endsL3CacheSize          thrpt   30  7885.065 ±   9.686  ops/s
+			CacheBenchmark.endsRamCacheSize         thrpt   30  7882.311 ±   9.807  ops/s
 
-      CacheBenchmark.randomL1CacheSize        thrpt   30  2722.183 ± 133.377  ops/s
-      CacheBenchmark.randomL2CacheSize        thrpt   30  1558.666 ±  56.423  ops/s
-      CacheBenchmark.randomL3CacheSize        thrpt   30   625.325 ±  35.480  ops/s
-      CacheBenchmark.randomRamCacheSize       thrpt   30   452.165 ±   4.326  ops/s
+			CacheBenchmark.randomL1CacheSize        thrpt   30  2797.702 ± 179.115  ops/s
+			CacheBenchmark.randomL2CacheSize        thrpt   30  1584.330 ±   3.536  ops/s
+			CacheBenchmark.randomL3CacheSize        thrpt   30  1087.367 ±  56.219  ops/s
+			CacheBenchmark.randomRamCacheSize       thrpt   30   462.359 ±   4.232  ops/s
 
 
 ## Conclusion
