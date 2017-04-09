@@ -12,6 +12,8 @@ public class SerializersBenchmarkMain {
         Options opt = new OptionsBuilder()
                 .include(".*" + SerializersBenchmark.class.getSimpleName() + ".*")
                 .forks(1)
+                .warmupIterations(5)
+                .measurementIterations(5)
                 .build();
         new Runner(opt).run();
     }

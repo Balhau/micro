@@ -192,3 +192,8 @@ This exercise as a very interesting one. The several approaches used to break th
 **NOTE**:
 
 * Thanks again to [Luis Silva](https://www.linkedin.com/in/luismiguelsilva/) to share and inspire this kindergarten experiment
+
+
+## Benchmarking Serializers
+
+Recently I wanted microbenchmark different serialization mechanisms. For now we compared the [Gson](https://github.com/google/gson) and [Proto Buffer](https://developers.google.com/protocol-buffers/) implementations. The point here was to have a objective and measurable comparison between these two. For that we created an entity called warrior and we stressed the serialization and deserialization operations.

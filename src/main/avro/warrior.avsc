@@ -1,0 +1,13 @@
+{"namespace": "net.balhau.benchmark.avro.warrior",
+  "type": "record",
+  "name": "Warrior",
+  "fields": [
+    {"name": "name", "type": "string"},
+    {"name": "age",  "type": ["int", "null"]},
+    {"name": "skills", "type": {
+      "type" : "array",
+      "items" : ["string","null"]
+    }}
+  ]
+}
+
